@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - image: harbor.ks.io/library/final-mariadb:1.0 # 사용자가 만든 MariaDB 이미지
+        name: mariadb
+        ports:
+        - containerPort: 3306 # MariaDB 기본 포트
+          name: mariadb
+        volumeMounts:
+        - name: mariadb-data # 데이터 저장을 위한 PVC
+          mountPath: /var/lib/mysql # MariaDB 데이터 디렉토리
+          subPath: "mysql" # PVC 내의 특정 경로 사용
+      imagePullSecrets:
+      - name: harbor-creds # Harbor 인증 시크릿 # Harbor 인증 시크릿
+      volumes:
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: pvc-nfs-dynamic-3tier-mariadb # PVC 이름
